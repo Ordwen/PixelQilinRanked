@@ -1,0 +1,5 @@
+name: "PixelQilinRanked"
+version: '${version}'
+main: fr.pixelqilin.pixelqilinranked.PixelQilinRanked
+api-version: 1.16
+authors: [ Ordwen ]
