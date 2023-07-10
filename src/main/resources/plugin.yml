@@ -3,3 +3,9 @@ version: '${version}'
 main: fr.pixelqilin.pixelqilinranked.PixelQilinRanked
 api-version: 1.16
 authors: [ Ordwen ]
+commands:
+  ranked:
+    description: default player command
+    permission: pixelqilinranked.ranked
+    aliases:
+      - rq

@@ -4,6 +4,7 @@ plugins {
     id 'idea'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'fr.pixelqilin'
@@ -119,10 +120,22 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    implementation "io.izzel.arclight:arclight-api:1.5.4"
+    compileOnly "io.izzel.arclight:arclight-api:1.5.4"
 
-    compileOnly "org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT"
-    implementation fg.deobf('libs:Pixelmon-1.16.5-9.1.5-universal:9.1.5')
+    compileOnly "org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT"
+    compileOnly fg.deobf('libs:Pixelmon-1.16.5-9.1.5-universal:9.1.5')
+
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+}
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'fr.pixelqilin.pixelqilinranked.PixelQilinRanked'
+    }
+    dependencies {
+        exclude(dependency("libs:Pixelmon-1.16.5-9.1.5-universal:9.1.5"))
+        exclude(dependency("io.izzel.arclight:arclight-api:1.5.4"))
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -164,4 +177,13 @@ tasks.named('jar', Jar).configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    // define Java version to compile with
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }

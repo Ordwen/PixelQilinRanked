@@ -1,0 +1,35 @@
+database:
+  host: localhost
+  port: 3306
+  name: database
+  user: root
+  password: password
+
+ranks:
+  bronze:
+    name: "&7Bronze"
+    elo: 0
+  silver:
+    name: "&fSilver"
+    elo: 200
+  gold:
+    name: "&6Gold"
+    elo: 400
+  platine:
+    name: "&bPlatine"
+    elo: 600
+  saphir:
+    name: "&3Saphir"
+    elo: 800
+  diamant:
+    name: "&dDiamant"
+    elo: 1000
+  diamant1:
+    name: "&dDiamant I"
+    elo: 1500
+  diamant2:
+    name: "&dDiamant II"
+    elo: 2000
+  diamant3:
+    name: "&dDiamant III"
+    elo: 2500
