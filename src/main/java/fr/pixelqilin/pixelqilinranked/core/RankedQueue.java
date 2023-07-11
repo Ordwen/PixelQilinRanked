@@ -10,7 +10,6 @@ import fr.pixelqilin.pixelqilinranked.database.SQLManager;
 import fr.pixelqilin.pixelqilinranked.utils.PluginLogger;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -330,6 +329,9 @@ public class RankedQueue {
 
         player.sendMessage("§cVous avez refusé le duel.");
         opponent.sendMessage("§c" + player.getName() + " a refusé le duel.");
+
+        searchForBattle(player, players.get(player));
+        searchForBattle(opponent, players.get(opponent));
     }
 
     /**
@@ -346,16 +348,10 @@ public class RankedQueue {
         waitingAnswers.remove(initiator);
         waitingAnswers.remove(target);
 
+        initiator.teleport(ranksManager.getFightLocation());
+        target.teleport(ranksManager.getFightLocation());
+
         final DuelRunnable duelRunnable = new DuelRunnable(duel, ranksManager.getTimeBeforeBattle());
         duelRunnable.runTaskTimer(PixelQilinRanked.INSTANCE, 0L, 20L);
-
-        Bukkit.getScheduler().runTaskLater(PixelQilinRanked.INSTANCE, () -> {
-            initiator.teleport(ranksManager.getFightLocation());
-            target.teleport(ranksManager.getFightLocation());
-
-            initiator.sendMessage("§aLe duel va commencer !");
-            target.sendMessage("§aLe duel va commencer !");
-
-        }, ranksManager.getTimeBeforeBattle() * 20L);
     }
 }

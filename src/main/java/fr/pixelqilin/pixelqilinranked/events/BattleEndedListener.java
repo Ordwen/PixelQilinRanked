@@ -7,7 +7,10 @@ import fr.pixelqilin.pixelqilinranked.core.duels.DuelsManager;
 import fr.pixelqilin.pixelqilinranked.core.RankedQueue;
 import fr.pixelqilin.pixelqilinranked.utils.PluginLogger;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+
+import java.util.UUID;
 
 public class BattleEndedListener {
 
@@ -22,8 +25,12 @@ public class BattleEndedListener {
         final BattleController bc = event.getBattleController();
 
         if (bc.getPlayers().size() != 2) return;
-        final Player player1 = (Player) bc.getPlayers().get(0).getEntity();
-        final Player player2 = (Player) bc.getPlayers().get(1).getEntity();
+
+        final UUID uuid1 = bc.getPlayers().get(0).player.getEntity().getUUID();
+        final UUID uuid2 = bc.getPlayers().get(1).player.getEntity().getUUID();
+
+        final Player player1 = Bukkit.getPlayer(uuid1);
+        final Player player2 = Bukkit.getPlayer(uuid2);
 
         if (!DuelsManager.arePlayersInBattle(player1, player2)) return;
 

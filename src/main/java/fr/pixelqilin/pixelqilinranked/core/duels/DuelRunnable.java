@@ -24,6 +24,7 @@ public class DuelRunnable extends BukkitRunnable {
 
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "pokebattle " + initiator.getName() + " " + target.getName());
             DuelsManager.addBattle(initiator, target);
+            cancel();
         }
 
         initiator.sendTitle("§cDuel dans", String.valueOf(cooldown), 10, 70, 20);

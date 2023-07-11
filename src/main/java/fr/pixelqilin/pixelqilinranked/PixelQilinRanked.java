@@ -2,6 +2,7 @@ package fr.pixelqilin.pixelqilinranked;
 
 import com.pixelmonmod.pixelmon.Pixelmon;
 import fr.pixelqilin.pixelqilinranked.commands.RankedCommand;
+import fr.pixelqilin.pixelqilinranked.commands.RankedCompleter;
 import fr.pixelqilin.pixelqilinranked.core.RankedQueue;
 import fr.pixelqilin.pixelqilinranked.database.MySQLManager;
 import fr.pixelqilin.pixelqilinranked.database.SQLManager;
@@ -26,6 +27,8 @@ public final class PixelQilinRanked extends JavaPlugin {
         rankedQueue = new RankedQueue(this);
 
         getCommand("ranked").setExecutor(new RankedCommand(this));
+        getCommand("ranked").setTabCompleter(new RankedCompleter());
+
         Arclight.registerForgeEvent(this, Pixelmon.EVENT_BUS, new BattleEndedListener(this));
     }
 

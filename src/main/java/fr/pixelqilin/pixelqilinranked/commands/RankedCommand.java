@@ -1,7 +1,6 @@
 package fr.pixelqilin.pixelqilinranked.commands;
 
 import fr.pixelqilin.pixelqilinranked.PixelQilinRanked;
-import net.minecraftforge.event.world.NoteBlockEvent;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -28,53 +27,42 @@ public class RankedCommand implements CommandExecutor {
         }
 
         switch (args[0]) {
-
-            case "join":
+            case "join" -> {
                 if (isPlayer) {
                     Player player = (Player) sender;
                     join(player);
-                }
-                else
+                } else
                     sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
-                break;
-
-            case "leave":
+            }
+            case "leave" -> {
                 if (isPlayer) {
                     Player player = (Player) sender;
                     leave(player);
-                }
-                else
+                } else
                     sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
-                break;
-
-            case "me":
+            }
+            case "me" -> {
                 if (isPlayer) {
                     Player player = (Player) sender;
                     me(player);
-                }
-                else
+                } else
                     sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
-                break;
-
-            case "accept":
+            }
+            case "accept" -> {
                 if (isPlayer) {
                     Player player = (Player) sender;
                     accept(player);
-                }
-                else
+                } else
                     sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
-                break;
-
-            case "decline":
+            }
+            case "decline" -> {
                 if (isPlayer) {
                     Player player = (Player) sender;
                     decline(player);
-                }
-                else
+                } else
                     sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
-                break;
-
-            case "see":
+            }
+            case "see" -> {
                 if (isAdmin) {
                     final Player target = plugin.getServer().getPlayer(args[1]);
                     if (target == null) {
@@ -86,50 +74,43 @@ public class RankedCommand implements CommandExecutor {
                         see(sender, target);
                     else
                         sender.sendMessage("§cUsage: /ranked see <player>");
-                }
-                else
+                } else
                     sender.sendMessage("§cVous n'avez pas la permission d'exécuter cette commande.");
-                break;
-
-            case "setzone":
+            }
+            case "setzone" -> {
                 if (!isPlayer) {
                     sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
                     return true;
                 }
-
                 if (isAdmin)
                     setZone((Player) sender);
                 else
                     sender.sendMessage("§cVous n'avez pas la permission d'exécuter cette commande.");
-                break;
-
-            case "add":
+            }
+            case "add" -> {
                 if (isAdmin) {
-                   if (args.length == 3) {
-                       final Player target = plugin.getServer().getPlayer(args[1]);
-                       if (target == null) {
-                           sender.sendMessage("§cLe joueur n'est pas connecté.");
-                           return true;
-                       }
+                    if (args.length == 3) {
+                        final Player target = plugin.getServer().getPlayer(args[1]);
+                        if (target == null) {
+                            sender.sendMessage("§cLe joueur n'est pas connecté.");
+                            return true;
+                        }
 
-                       int elo;
-                       try {
-                           elo = Integer.parseInt(args[2]);
-                       } catch (NumberFormatException e) {
-                           sender.sendMessage("§cL'elo doit être un nombre.");
-                           return true;
-                       }
+                        int elo;
+                        try {
+                            elo = Integer.parseInt(args[2]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage("§cL'elo doit être un nombre.");
+                            return true;
+                        }
 
-                       add(sender, target, elo);
-                   }
-                   else
-                       sender.sendMessage("§cUsage: /ranked add <player> <elo>");
-                }
-                else
+                        add(sender, target, elo);
+                    } else
+                        sender.sendMessage("§cUsage: /ranked add <player> <elo>");
+                } else
                     sender.sendMessage("§cVous n'avez pas la permission d'exécuter cette commande.");
-                break;
-
-            case "remove":
+            }
+            case "remove" -> {
                 if (isAdmin) {
                     if (args.length == 3) {
                         final Player target = plugin.getServer().getPlayer(args[1]);
@@ -147,15 +128,12 @@ public class RankedCommand implements CommandExecutor {
                         }
 
                         remove(sender, target, elo);
-                    }
-                    else
+                    } else
                         sender.sendMessage("§cUsage: /ranked remove <player>");
-                }
-                else
+                } else
                     sender.sendMessage("§cVous n'avez pas la permission d'exécuter cette commande.");
-                break;
-
-            case "set":
+            }
+            case "set" -> {
                 if (isAdmin) {
                     if (args.length == 3) {
                         final Player target = plugin.getServer().getPlayer(args[1]);
@@ -173,17 +151,12 @@ public class RankedCommand implements CommandExecutor {
                         }
 
                         set(sender, target, elo);
-                    }
-                    else
+                    } else
                         sender.sendMessage("§cUsage: /ranked set <player> <elo>");
-                }
-                else
+                } else
                     sender.sendMessage("§cVous n'avez pas la permission d'exécuter cette commande.");
-                break;
-
-            default:
-                usage(isAdmin, sender);
-                break;
+            }
+            default -> usage(isAdmin, sender);
         }
 
         return true;
@@ -257,8 +230,10 @@ public class RankedCommand implements CommandExecutor {
      */
     private void setZone(Player player) {
         final Location location = player.getLocation();
-        plugin.getConfig().set("fight-zone", location);
+        plugin.getConfig().set("fight-location", location);
         plugin.saveConfig();
+
+        player.sendMessage("§aLa zone de combat a été définie.");
     }
 
     /**
