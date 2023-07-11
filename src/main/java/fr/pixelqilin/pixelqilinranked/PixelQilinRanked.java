@@ -5,7 +5,7 @@ import fr.pixelqilin.pixelqilinranked.commands.RankedCommand;
 import fr.pixelqilin.pixelqilinranked.core.RankedQueue;
 import fr.pixelqilin.pixelqilinranked.database.MySQLManager;
 import fr.pixelqilin.pixelqilinranked.database.SQLManager;
-import fr.pixelqilin.pixelqilinranked.events.CaptureEventListener;
+import fr.pixelqilin.pixelqilinranked.events.BattleEndedListener;
 import io.izzel.arclight.api.Arclight;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -26,7 +26,7 @@ public final class PixelQilinRanked extends JavaPlugin {
         rankedQueue = new RankedQueue(this);
 
         getCommand("ranked").setExecutor(new RankedCommand(this));
-        Arclight.registerForgeEvent(this, Pixelmon.EVENT_BUS, new CaptureEventListener());
+        Arclight.registerForgeEvent(this, Pixelmon.EVENT_BUS, new BattleEndedListener(this));
     }
 
     @Override

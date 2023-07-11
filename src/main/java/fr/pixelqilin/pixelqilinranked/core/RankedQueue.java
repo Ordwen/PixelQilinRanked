@@ -1,9 +1,16 @@
 package fr.pixelqilin.pixelqilinranked.core;
 
 import fr.pixelqilin.pixelqilinranked.PixelQilinRanked;
+import fr.pixelqilin.pixelqilinranked.core.duels.Duel;
+import fr.pixelqilin.pixelqilinranked.core.duels.DuelRunnable;
+import fr.pixelqilin.pixelqilinranked.core.duels.DuelsManager;
+import fr.pixelqilin.pixelqilinranked.core.ranks.Rank;
 import fr.pixelqilin.pixelqilinranked.core.ranks.RanksManager;
 import fr.pixelqilin.pixelqilinranked.database.SQLManager;
 import fr.pixelqilin.pixelqilinranked.utils.PluginLogger;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -23,6 +30,50 @@ public class RankedQueue {
     private final Queue<Player> rankedQueue = new LinkedList<>();
     private final Map<Player, RankedPlayer> players = new HashMap<>();
 
+    private final Map<Player, Duel> waitingAnswers = new HashMap<>();
+
+    /**
+     * Update the player rank when he won a battle.
+     * @param player player who won the battle
+     */
+    public void battleWon(Player player) {
+        final RankedPlayer rankedPlayer = players.get(player);
+
+        final int elo = rankedPlayer.getElo() + ranksManager.getEloOnWin();
+        final Rank newRank = ranksManager.getRank(elo);
+
+        rankedPlayer.setElo(elo);
+        rankedPlayer.setRank(newRank.getName());
+
+        sqlManager.getSqlSaver().save(player.getUniqueId().toString(), rankedPlayer);
+
+        player.sendMessage("§aVous avez gagné §6" + ranksManager.getEloOnWin() + " §apoints d'elo.");
+        player.sendMessage("§aVous êtes classé §6" + newRank.getName() + " §aavec§6" + elo + " §apoints d'elo).");
+
+        removeFromQueue(player);
+    }
+
+    /**
+     * Update the player rank when he lost a battle.
+     * @param player player who lost the battle
+     */
+    public void battleLost(Player player) {
+        final RankedPlayer rankedPlayer = players.get(player);
+
+        final int elo = rankedPlayer.getElo() - ranksManager.getEloOnLose();
+        final Rank newRank = ranksManager.getRank(elo);
+
+        rankedPlayer.setElo(elo);
+        rankedPlayer.setRank(newRank.getName());
+
+        sqlManager.getSqlSaver().save(player.getUniqueId().toString(), rankedPlayer);
+
+        player.sendMessage("§cVous avez perdu §6" + ranksManager.getEloOnLose() + " §cpoints d'elo.");
+        player.sendMessage("§cVous êtes classé §6" + newRank.getName() + " §cavec§6 " + elo + " §cpoints d'elo).");
+
+        removeFromQueue(player);
+    }
+
     /**
      * Add a player to the ranked queue.
      * @param player player to add
@@ -33,10 +84,11 @@ public class RankedQueue {
             return;
         }
 
-        final RankedPlayer rankedPlayer = sqlManager.getSqlLoader().load(player.getUniqueId().toString());
+        RankedPlayer rankedPlayer = sqlManager.getSqlLoader().load(player.getUniqueId().toString());
 
         if (rankedPlayer == null) {
-            players.put(player, new RankedPlayer(player.getUniqueId().toString(), ranksManager.getRank(0).getName(), 0));
+            rankedPlayer = new RankedPlayer(player.getUniqueId().toString(), ranksManager.getRank(0).getName(), 0);
+            players.put(player, rankedPlayer);
             PluginLogger.info("New ranked player detected, creating new entry.");
         } else {
             players.put(player, rankedPlayer);
@@ -45,6 +97,8 @@ public class RankedQueue {
 
         rankedQueue.add(player);
         player.sendMessage("§eVous avez rejoint la file d'attente.");
+
+        searchForBattle(player, rankedPlayer);
     }
 
     /**
@@ -71,7 +125,7 @@ public class RankedQueue {
         RankedPlayer rankedPlayer = getRankedPlayer(player, player, true);
         if (rankedPlayer == null) return;
 
-        player.sendMessage("§aVous êtes classé " + rankedPlayer.getRank() + " avec " + rankedPlayer.getElo() + " elo.");
+        player.sendMessage("§aVous êtes classé " + rankedPlayer.getRank() + " §aavec " + rankedPlayer.getElo() + " elo.");
     }
 
     /**
@@ -83,6 +137,20 @@ public class RankedQueue {
         if (rankedPlayer == null) return;
 
         sender.sendMessage("§aLe joueur " + target + " est classé " + rankedPlayer.getRank() + " avec " + rankedPlayer.getElo() + " elo.");
+    }
+
+    /**
+     * Update the rank of a player when its elo is updated.
+     * @param target target to update the rank
+     * @param rankedPlayer ranked player to update
+     * @param regress if the player has lost elo
+     */
+    private void updateRank(Player target, RankedPlayer rankedPlayer, boolean regress) {
+        final int elo = rankedPlayer.getElo();
+        rankedPlayer.setRank(ranksManager.getRank(elo).getName());
+
+        if (regress) target.sendMessage("§cVous êtes classé " + rankedPlayer.getRank() + "§c.");
+        else target.sendMessage("§aVous êtes classé " + rankedPlayer.getRank() + " §a!");
     }
 
     /**
@@ -98,8 +166,11 @@ public class RankedQueue {
         int newElo = rankedPlayer.getElo() + amount;
         if (newElo < 0) newElo = 0;
         rankedPlayer.setElo(newElo);
+        updateRank(target, rankedPlayer, false);
 
+        sender.sendMessage("§eVous avez ajouté " + amount + " elo à " + target.getName() + ".");
         target.sendMessage("§aVous avez gagné " + amount + " elo.");
+
         sqlManager.getSqlSaver().save(target.getName(), rankedPlayer);
     }
 
@@ -116,8 +187,11 @@ public class RankedQueue {
         int newElo = rankedPlayer.getElo() - amount;
         if (newElo < 0) newElo = 0;
         rankedPlayer.setElo(newElo);
+        updateRank(target, rankedPlayer, true);
 
+        sender.sendMessage("§eVous avez retiré " + amount + " elo à " + target.getName() + ".");
         target.sendMessage("§cVous avez perdu " + amount + " elo.");
+
         sqlManager.getSqlSaver().save(target.getName(), rankedPlayer);
     }
 
@@ -132,8 +206,11 @@ public class RankedQueue {
         if (rankedPlayer == null) return;
 
         rankedPlayer.setElo(amount);
+        updateRank(target, rankedPlayer, false);
 
+        sender.sendMessage("§eVous avez défini l'elo de " + target.getName() + " à " + amount + ".");
         target.sendMessage("§aVous avez maintenant " + amount + " elo.");
+
         sqlManager.getSqlSaver().save(target.getName(), rankedPlayer);
     }
 
@@ -159,5 +236,126 @@ public class RankedQueue {
         }
 
         return rankedPlayer;
+    }
+
+    private void searchForBattle(Player player, RankedPlayer rankedPlayer) {
+
+        final int elo = rankedPlayer.getElo();
+        final int difference = ranksManager.getMaximumEloDifference();
+
+        final int minElo = Math.max(elo - difference, 0);
+        final int maxElo = elo + difference;
+
+        for (Player other : rankedQueue) {
+            if (other == player) continue;
+            if (rankedPlayer.getDeniedPlayers().contains(other)) continue;
+            if (waitingAnswers.containsKey(other)) continue;
+            if (DuelsManager.isPlayerInBattle(other)) continue;
+
+            final RankedPlayer otherRankedPlayer = players.get(player);
+
+            if (otherRankedPlayer.getElo() >= minElo && otherRankedPlayer.getElo() <= maxElo) {
+                proposeBattle(player, other, rankedPlayer, otherRankedPlayer);
+                return;
+            }
+        }
+
+        player.sendMessage("§cAucun adversaire n'a été trouvé. Vous êtes dans la file d'attente.");
+    }
+
+    /**
+     * Propose a battle to two players.
+     * @param player player who proposed the battle
+     * @param other player who is proposed the battle
+     * @param rankedPlayer stats from player who proposed the battle
+     * @param otherRankedPlayer stats from player who is proposed the battle
+     */
+    private void proposeBattle(Player player, Player other, RankedPlayer rankedPlayer, RankedPlayer otherRankedPlayer) {
+
+        final Duel duel = new Duel(player, other);
+        waitingAnswers.put(player, duel);
+        waitingAnswers.put(other, duel);
+
+        player.sendMessage("§aVous avez trouvé un adversaire !");
+        player.sendMessage("§aVous allez combattre " + other.getName() + " (rang : " + otherRankedPlayer.getRank() + "§a).");
+        player.sendMessage("§eVous avez " + ranksManager.getTimeToAccept() + " secondes pour accepter.");
+
+        other.sendMessage("§aVous avez trouvé un adversaire !");
+        other.sendMessage("§aVous allez combattre " + player.getName() + " (rang : " + rankedPlayer.getRank() + "§a).");
+        other.sendMessage("§eVous avez " + ranksManager.getTimeToAccept() + " secondes pour accepter.");
+
+        final TextComponent accept = new TextComponent("§a[Accepter]");
+        accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ranked accept"));
+
+        final TextComponent decline = new TextComponent("§c[Décliner]");
+        decline.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ranked decline"));
+
+        final TextComponent empty = new TextComponent(" ");
+
+        player.spigot().sendMessage(accept, empty, decline);
+        other.spigot().sendMessage(accept, empty, decline);
+    }
+
+    /**
+     * Make a player accept a duel.
+     * @param player player who accept the duel
+     */
+    public void accept(Player player) {
+        if (!waitingAnswers.containsKey(player)) {
+            player.sendMessage("§cVous n'avez pas de duel en attente.");
+            return;
+        }
+
+        final Duel duel = waitingAnswers.get(player);
+        duel.accept(player);
+
+        if (duel.isAcceptedByBoth()) launchDuel(duel);
+    }
+
+    /**
+     * Make a player decline a duel.
+     * @param player player who decline the duel
+     */
+    public void decline(Player player) {
+        if (!waitingAnswers.containsKey(player)) {
+            player.sendMessage("§cVous n'avez pas de duel en attente.");
+            return;
+        }
+
+        final Duel duel = waitingAnswers.get(player);
+        final Player opponent = duel.getOpponent(player);
+
+        waitingAnswers.remove(player);
+        waitingAnswers.remove(opponent);
+
+        player.sendMessage("§cVous avez refusé le duel.");
+        opponent.sendMessage("§c" + player.getName() + " a refusé le duel.");
+    }
+
+    /**
+     * Launch a duel when both players accepted.
+     * @param duel duel to launch
+     */
+    private void launchDuel(Duel duel) {
+        final Player initiator = duel.getInitiator();
+        final Player target = duel.getTarget();
+
+        initiator.sendMessage("§aLe duel commence dans " + ranksManager.getTimeBeforeBattle() + " secondes !");
+        target.sendMessage("§aLe duel commence dans " + ranksManager.getTimeBeforeBattle() + " secondes !");
+
+        waitingAnswers.remove(initiator);
+        waitingAnswers.remove(target);
+
+        final DuelRunnable duelRunnable = new DuelRunnable(duel, ranksManager.getTimeBeforeBattle());
+        duelRunnable.runTaskTimer(PixelQilinRanked.INSTANCE, 0L, 20L);
+
+        Bukkit.getScheduler().runTaskLater(PixelQilinRanked.INSTANCE, () -> {
+            initiator.teleport(ranksManager.getFightLocation());
+            target.teleport(ranksManager.getFightLocation());
+
+            initiator.sendMessage("§aLe duel va commencer !");
+            target.sendMessage("§aLe duel va commencer !");
+
+        }, ranksManager.getTimeBeforeBattle() * 20L);
     }
 }

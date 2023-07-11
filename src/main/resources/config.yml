@@ -5,6 +5,21 @@ database:
   user: root
   password: password
 
+elo-on-win: 15
+elo-on-lose: 20
+
+maximum-elo-difference: 200
+time-to-accept: 30 # en secondes
+time-before-battle: 5 # en secondes
+
+fight-location:
+    world: world
+    x: 0
+    y: 0
+    z: 0
+    pitch: 0
+    yaw: 0
+
 ranks:
   bronze:
     name: "&7Bronze"

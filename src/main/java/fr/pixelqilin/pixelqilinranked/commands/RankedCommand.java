@@ -1,6 +1,8 @@
 package fr.pixelqilin.pixelqilinranked.commands;
 
 import fr.pixelqilin.pixelqilinranked.PixelQilinRanked;
+import net.minecraftforge.event.world.NoteBlockEvent;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -54,6 +56,24 @@ public class RankedCommand implements CommandExecutor {
                     sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
                 break;
 
+            case "accept":
+                if (isPlayer) {
+                    Player player = (Player) sender;
+                    accept(player);
+                }
+                else
+                    sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
+                break;
+
+            case "decline":
+                if (isPlayer) {
+                    Player player = (Player) sender;
+                    decline(player);
+                }
+                else
+                    sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
+                break;
+
             case "see":
                 if (isAdmin) {
                     final Player target = plugin.getServer().getPlayer(args[1]);
@@ -67,6 +87,18 @@ public class RankedCommand implements CommandExecutor {
                     else
                         sender.sendMessage("§cUsage: /ranked see <player>");
                 }
+                else
+                    sender.sendMessage("§cVous n'avez pas la permission d'exécuter cette commande.");
+                break;
+
+            case "setzone":
+                if (!isPlayer) {
+                    sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
+                    return true;
+                }
+
+                if (isAdmin)
+                    setZone((Player) sender);
                 else
                     sender.sendMessage("§cVous n'avez pas la permission d'exécuter cette commande.");
                 break;
@@ -186,6 +218,22 @@ public class RankedCommand implements CommandExecutor {
     }
 
     /**
+     * Accept the duel.
+     * @param player the player who accept the duel
+     */
+    private void accept(Player player) {
+        plugin.getRankedQueue().accept(player);
+    }
+
+    /**
+     * Decline the duel.
+     * @param player the player who decline the duel
+     */
+    private void decline(Player player) {
+        plugin.getRankedQueue().decline(player);
+    }
+
+    /**
      * Display the elo of the player.
      * @param player the player to display the elo
      */
@@ -200,6 +248,17 @@ public class RankedCommand implements CommandExecutor {
      */
     private void see(CommandSender sender, Player target) {
         plugin.getRankedQueue().checkEloOther(sender, target);
+    }
+
+
+    /**
+     * Set the zone for the duels.
+     * @param player player who execute the command
+     */
+    private void setZone(Player player) {
+        final Location location = player.getLocation();
+        plugin.getConfig().set("fight-zone", location);
+        plugin.saveConfig();
     }
 
     /**

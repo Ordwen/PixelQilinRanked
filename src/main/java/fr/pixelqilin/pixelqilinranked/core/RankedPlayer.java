@@ -1,7 +1,12 @@
 package fr.pixelqilin.pixelqilinranked.core;
 
+import org.bukkit.entity.Player;
+
+import java.util.HashSet;
+
 public class RankedPlayer {
 
+    private final HashSet<Player> deniedPlayers = new HashSet<>();
     private final String uuid;
     private String rank;
     private int elo;
@@ -56,5 +61,29 @@ public class RankedPlayer {
      */
     public void setElo(int elo) {
         this.elo = elo;
+    }
+
+    /**
+     * Get the players against whom the player don't want to play.
+     * @return denied players
+     */
+    public HashSet<Player> getDeniedPlayers() {
+        return deniedPlayers;
+    }
+
+    /**
+     * Add a player to the denied players list.
+     * @param player player to add
+     */
+    public void addDeniedPlayer(Player player) {
+        deniedPlayers.add(player);
+    }
+
+    /**
+     * Remove a player from the denied players list.
+     * @param player player to remove
+     */
+    public void removeDeniedPlayer(Player player) {
+        deniedPlayers.remove(player);
     }
 }
