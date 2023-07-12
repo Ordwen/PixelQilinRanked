@@ -51,6 +51,8 @@ public class Duel {
             initatorAccepted = true;
         else if (player.equals(target))
             targetAccepted = true;
+
+        player.sendMessage("§aVous avez accepté le duel ! En attente de l'autre joueur...");
     }
 
     /**

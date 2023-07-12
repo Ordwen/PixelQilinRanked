@@ -123,6 +123,7 @@ dependencies {
     compileOnly "io.izzel.arclight:arclight-api:1.5.4"
 
     compileOnly "org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT"
+
     compileOnly fg.deobf('libs:Pixelmon-1.16.5-9.1.5-universal:9.1.5')
 
     implementation 'com.zaxxer:HikariCP:5.0.1'

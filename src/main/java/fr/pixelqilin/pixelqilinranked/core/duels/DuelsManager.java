@@ -20,7 +20,7 @@ public class DuelsManager {
 
     public static boolean arePlayersInBattle(Player player1, Player player2) {
 
-        return (battles.containsKey(player1) && battles.get(player1).equals(player2)) ||
+        return (battles.containsKey(player1) && battles.get(player1).equals(player2)) &&
                 (battles.containsKey(player2) && battles.get(player2).equals(player1));
     }
 

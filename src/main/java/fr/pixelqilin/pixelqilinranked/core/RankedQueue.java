@@ -10,6 +10,7 @@ import fr.pixelqilin.pixelqilinranked.database.SQLManager;
 import fr.pixelqilin.pixelqilinranked.utils.PluginLogger;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -47,7 +48,7 @@ public class RankedQueue {
         sqlManager.getSqlSaver().save(player.getUniqueId().toString(), rankedPlayer);
 
         player.sendMessage("§aVous avez gagné §6" + ranksManager.getEloOnWin() + " §apoints d'elo.");
-        player.sendMessage("§aVous êtes classé §6" + newRank.getName() + " §aavec§6" + elo + " §apoints d'elo).");
+        player.sendMessage("§aVous êtes classé §6" + newRank.getName() + " §aavec§6 " + elo + " §apoints d'elo.");
 
         removeFromQueue(player);
     }
@@ -59,7 +60,9 @@ public class RankedQueue {
     public void battleLost(Player player) {
         final RankedPlayer rankedPlayer = players.get(player);
 
-        final int elo = rankedPlayer.getElo() - ranksManager.getEloOnLose();
+        int elo = rankedPlayer.getElo() - ranksManager.getEloOnLose();
+        if (elo < 0) elo = 0;
+
         final Rank newRank = ranksManager.getRank(elo);
 
         rankedPlayer.setElo(elo);
@@ -68,7 +71,7 @@ public class RankedQueue {
         sqlManager.getSqlSaver().save(player.getUniqueId().toString(), rankedPlayer);
 
         player.sendMessage("§cVous avez perdu §6" + ranksManager.getEloOnLose() + " §cpoints d'elo.");
-        player.sendMessage("§cVous êtes classé §6" + newRank.getName() + " §cavec§6 " + elo + " §cpoints d'elo).");
+        player.sendMessage("§cVous êtes classé §6" + newRank.getName() + " §cavec§6 " + elo + " §cpoints d'elo.");
 
         removeFromQueue(player);
     }
@@ -86,7 +89,7 @@ public class RankedQueue {
         RankedPlayer rankedPlayer = sqlManager.getSqlLoader().load(player.getUniqueId().toString());
 
         if (rankedPlayer == null) {
-            rankedPlayer = new RankedPlayer(player.getUniqueId().toString(), ranksManager.getRank(0).getName(), 0);
+            rankedPlayer = new RankedPlayer(player.getUniqueId().toString(), ranksManager.getRank(0).getName(), 0, 0, 0);
             players.put(player, rankedPlayer);
             PluginLogger.info("New ranked player detected, creating new entry.");
         } else {
@@ -125,6 +128,7 @@ public class RankedQueue {
         if (rankedPlayer == null) return;
 
         player.sendMessage("§aVous êtes classé " + rankedPlayer.getRank() + " §aavec " + rankedPlayer.getElo() + " elo.");
+        player.sendMessage("§aVous avez gagné " + rankedPlayer.getWins() + " fois et perdu " + rankedPlayer.getLosses() + " fois.");
     }
 
     /**
@@ -135,7 +139,8 @@ public class RankedQueue {
         RankedPlayer rankedPlayer = getRankedPlayer(sender, target, false);
         if (rankedPlayer == null) return;
 
-        sender.sendMessage("§aLe joueur " + target + " est classé " + rankedPlayer.getRank() + " avec " + rankedPlayer.getElo() + " elo.");
+        sender.sendMessage("§aLe joueur " + target.getName() + " est classé " + rankedPlayer.getRank() + " §aavec " + rankedPlayer.getElo() + " elo.");
+        sender.sendMessage("§aIl a gagné " + rankedPlayer.getWins() + " fois et perdu " + rankedPlayer.getLosses() + " fois.");
     }
 
     /**
@@ -237,6 +242,11 @@ public class RankedQueue {
         return rankedPlayer;
     }
 
+    /**
+     * Search a battle for a player, by checking the elo of the players in the queue.
+     * @param player player to search a battle
+     * @param rankedPlayer RankedPlayer of the player
+     */
     private void searchForBattle(Player player, RankedPlayer rankedPlayer) {
 
         final int elo = rankedPlayer.getElo();
@@ -293,6 +303,11 @@ public class RankedQueue {
 
         player.spigot().sendMessage(accept, empty, decline);
         other.spigot().sendMessage(accept, empty, decline);
+
+        Bukkit.getScheduler().runTaskLaterAsynchronously(PixelQilinRanked.INSTANCE, () -> {
+            if (waitingAnswers.containsKey(player)) decline(player);
+            if (waitingAnswers.containsKey(other)) decline(other);
+        }, ranksManager.getTimeToAccept() * 20L);
     }
 
     /**

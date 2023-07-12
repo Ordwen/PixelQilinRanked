@@ -10,17 +10,23 @@ public class RankedPlayer {
     private final String uuid;
     private String rank;
     private int elo;
+    private int wins;
+    private int losses;
 
     /**
      * Constructor of the RankedPlayer class.
      * @param uuid uuid of the player
      * @param rank rank of the player
      * @param elo elo of the player
+     * @param wins wins of the player
+     * @param losses losses of the player
      */
-    public RankedPlayer(String uuid, String rank, int elo) {
+    public RankedPlayer(String uuid, String rank, int elo, int wins, int losses) {
         this.uuid = uuid;
         this.rank = rank;
         this.elo = elo;
+        this.wins = wins;
+        this.losses = losses;
     }
 
     /**
@@ -85,5 +91,50 @@ public class RankedPlayer {
      */
     public void removeDeniedPlayer(Player player) {
         deniedPlayers.remove(player);
+    }
+
+    /**
+     * Get the number of wins of the player.
+     * @return wins amount
+     */
+    public int getWins() {
+        return wins;
+    }
+
+    /**
+     * Get the number of losses of the player.
+     */
+    public int getLosses() {
+        return losses;
+    }
+
+    /**
+     * Set the number of wins of the player.
+     * @param wins wins amount
+     */
+    public void setWins(int wins) {
+        this.wins = wins;
+    }
+
+    /**
+     * Set the number of losses of the player.
+     * @param losses losses amount
+     */
+    public void setLosses(int losses) {
+        this.losses = losses;
+    }
+
+    /**
+     * Increase the number of wins of the player.
+     */
+    public void increaseWins() {
+        wins++;
+    }
+
+    /**
+     * Increase the number of losses of the player.
+     */
+    public void increaseLosses() {
+        losses++;
     }
 }

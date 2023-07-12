@@ -22,8 +22,8 @@ public class DuelRunnable extends BukkitRunnable {
             initiator.sendTitle("§aLe duel commence !", "", 10, 70, 20);
             target.sendTitle("§aLe duel commence !", "", 10, 70, 20);
 
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "pokebattle " + initiator.getName() + " " + target.getName());
             DuelsManager.addBattle(initiator, target);
+            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "pokebattle " + initiator.getName() + " " + target.getName());
             cancel();
         }
 

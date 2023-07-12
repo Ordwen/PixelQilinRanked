@@ -10,8 +10,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.UUID;
-
 public class BattleEndedListener {
 
     private final RankedQueue rankedQueue;
@@ -23,14 +21,13 @@ public class BattleEndedListener {
     @SubscribeEvent
     public void onBattleEnded(BattleEndEvent event) {
         final BattleController bc = event.getBattleController();
-
         if (bc.getPlayers().size() != 2) return;
 
-        final UUID uuid1 = bc.getPlayers().get(0).player.getEntity().getUUID();
-        final UUID uuid2 = bc.getPlayers().get(1).player.getEntity().getUUID();
+        final String name1 = bc.getPlayers().get(0).getDisplayName();
+        final String name2 = bc.getPlayers().get(1).getDisplayName();
 
-        final Player player1 = Bukkit.getPlayer(uuid1);
-        final Player player2 = Bukkit.getPlayer(uuid2);
+        final Player player1 = Bukkit.getPlayer(name1);
+        final Player player2 = Bukkit.getPlayer(name2);
 
         if (!DuelsManager.arePlayersInBattle(player1, player2)) return;
 

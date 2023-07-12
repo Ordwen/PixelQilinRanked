@@ -27,6 +27,8 @@ public abstract class SQLManager {
                         "     PLAYER_UUID char(36)  not null  ,\n" +
                         "     PLAYER_RANK char(32) not null, \n" +
                         "     PLAYER_ELO int not null, \n" +
+                        "     PLAYER_WINS int not null, \n" +
+                        "     PLAYER_LOSSES int not null, \n" +
                         "     constraint PK_PLAYER_UUID primary key (PLAYER_UUID)\n" +
                         "  );";
 

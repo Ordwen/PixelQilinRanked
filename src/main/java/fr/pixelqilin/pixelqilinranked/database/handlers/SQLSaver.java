@@ -12,7 +12,12 @@ import java.sql.SQLException;
 
 public class SQLSaver {
     private final String query =
-            "INSERT INTO RANKED_PLAYERS (PLAYER_UUID,PLAYER_RANK,PLAYER_ELO) VALUES (?,?,?) ON DUPLICATE KEY UPDATE PLAYER_RANK = VALUES(PLAYER_RANK), PLAYER_ELO = VALUES(PLAYER_ELO)";
+            "INSERT INTO RANKED_PLAYERS (PLAYER_UUID,PLAYER_RANK,PLAYER_ELO,PLAYER_WINS,PLAYER_LOSSES)" +
+                    "VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE " +
+                    "PLAYER_RANK = VALUES(PLAYER_RANK), " +
+                    "PLAYER_ELO = VALUES(PLAYER_ELO), " +
+                    "PLAYER_WINS = VALUES(PLAYER_WINS), " +
+                    "PLAYER_LOSSES = VALUES(PLAYER_LOSSES)";
     private final SQLManager sqlManager;
 
     /**
@@ -36,6 +41,8 @@ public class SQLSaver {
                 preparedStatement.setString(1, rankedPlayer.getUuid());
                 preparedStatement.setString(2, rankedPlayer.getRank());
                 preparedStatement.setInt(3, rankedPlayer.getElo());
+                preparedStatement.setInt(4, rankedPlayer.getWins());
+                preparedStatement.setInt(5, rankedPlayer.getLosses());
 
                 preparedStatement.executeUpdate();
 
