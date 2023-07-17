@@ -62,11 +62,7 @@ public class RanksManager {
     public Rank getRank(int elo) {
         Rank rank = null;
 
-        System.out.println("elo: " + elo);
-
         for (Map.Entry<Integer, Rank> entry : ranks.entrySet()) {
-            System.out.println("rank: " + entry.getValue().getName());
-            System.out.println("rank elo: " + entry.getKey());
             if (elo >= entry.getKey()) {
                 rank = entry.getValue();
             }

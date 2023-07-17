@@ -1,5 +1,7 @@
 package fr.pixelqilin.pixelqilinranked.core;
 
+import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
+import com.pixelmonmod.pixelmon.api.storage.*;
 import fr.pixelqilin.pixelqilinranked.PixelQilinRanked;
 import fr.pixelqilin.pixelqilinranked.core.duels.Duel;
 import fr.pixelqilin.pixelqilinranked.core.duels.DuelRunnable;
@@ -44,6 +46,7 @@ public class RankedQueue {
 
         rankedPlayer.setElo(elo);
         rankedPlayer.setRank(newRank.getName());
+        rankedPlayer.increaseWins();
 
         sqlManager.getSqlSaver().save(player.getUniqueId().toString(), rankedPlayer);
 
@@ -67,6 +70,7 @@ public class RankedQueue {
 
         rankedPlayer.setElo(elo);
         rankedPlayer.setRank(newRank.getName());
+        rankedPlayer.increaseLosses();
 
         sqlManager.getSqlSaver().save(player.getUniqueId().toString(), rankedPlayer);
 
@@ -83,6 +87,13 @@ public class RankedQueue {
     public void addToQueue(Player player) {
         if (rankedQueue.contains(player)) {
             player.sendMessage("§cVous êtes déjà dans la file d'attente.");
+            return;
+        }
+
+        if (!haveOnePokemonHealed(player)) {
+            player.sendMessage("§cVous n'avez aucun Pokémon en état de combattre !");
+            player.sendMessage("§cIl vous en faut au moins un pour rejoindre la file d'attente.");
+            removeFromQueue(player);
             return;
         }
 
@@ -243,11 +254,31 @@ public class RankedQueue {
     }
 
     /**
+     * Check if the player have at least one Pokémon healed.
+     * @param player player to check
+     * @return true if the player have at least one Pokémon healed
+     */
+    private boolean haveOnePokemonHealed(Player player) {
+        final PlayerPartyStorage partyStorage = StorageProxy.getParty(player.getUniqueId());
+
+        for (Pokemon pokemon : partyStorage.getTeam()) {
+            if (pokemon.getHealth() > 0) return true;
+        }
+        return false;
+    }
+
+    /**
      * Search a battle for a player, by checking the elo of the players in the queue.
      * @param player player to search a battle
      * @param rankedPlayer RankedPlayer of the player
      */
     private void searchForBattle(Player player, RankedPlayer rankedPlayer) {
+        if (!haveOnePokemonHealed(player)) {
+            player.sendMessage("§cVous n'avez aucun Pokémon soigné !");
+            player.sendMessage("§cVous devez en soigner au moins un pour rejoindre la file d'attente.");
+            removeFromQueue(player);
+            return;
+        }
 
         final int elo = rankedPlayer.getElo();
         final int difference = ranksManager.getMaximumEloDifference();
@@ -262,6 +293,7 @@ public class RankedQueue {
             if (DuelsManager.isPlayerInBattle(other)) continue;
 
             final RankedPlayer otherRankedPlayer = players.get(player);
+            if (otherRankedPlayer.getDeniedPlayers().contains(player)) continue;
 
             if (otherRankedPlayer.getElo() >= minElo && otherRankedPlayer.getElo() <= maxElo) {
                 proposeBattle(player, other, rankedPlayer, otherRankedPlayer);
@@ -341,6 +373,9 @@ public class RankedQueue {
 
         waitingAnswers.remove(player);
         waitingAnswers.remove(opponent);
+
+        players.get(player).getDeniedPlayers().add(opponent);
+        players.get(opponent).getDeniedPlayers().add(player);
 
         player.sendMessage("§cVous avez refusé le duel.");
         opponent.sendMessage("§c" + player.getName() + " a refusé le duel.");
