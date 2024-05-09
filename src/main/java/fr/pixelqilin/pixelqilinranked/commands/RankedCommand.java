@@ -77,6 +77,14 @@ public class RankedCommand implements CommandExecutor {
                 } else
                     sender.sendMessage("§cVous n'avez pas la permission d'exécuter cette commande.");
             }
+            case "top" -> {
+                if (!isPlayer) {
+                    sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
+                    return true;
+                }
+
+                openTop((Player) sender);
+            }
             case "setzone" -> {
                 if (!isPlayer) {
                     sender.sendMessage("§cVous devez être un joueur pour exécuter cette commande.");
@@ -223,6 +231,13 @@ public class RankedCommand implements CommandExecutor {
         plugin.getRankedQueue().checkEloOther(sender, target);
     }
 
+    /**
+     * Open the top of the elo.
+     * @param sender the player who execute the command
+     */
+    private void openTop(Player sender) {
+        plugin.getTopInventory().openTop(sender);
+    }
 
     /**
      * Set the zone for the duels.

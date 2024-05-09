@@ -1,7 +1,8 @@
 package fr.pixelqilin.pixelqilinranked.core;
 
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
-import com.pixelmonmod.pixelmon.api.storage.*;
+import com.pixelmonmod.pixelmon.api.storage.PlayerPartyStorage;
+import com.pixelmonmod.pixelmon.api.storage.StorageProxy;
 import fr.pixelqilin.pixelqilinranked.PixelQilinRanked;
 import fr.pixelqilin.pixelqilinranked.core.duels.Duel;
 import fr.pixelqilin.pixelqilinranked.core.duels.DuelRunnable;
@@ -16,7 +17,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
 
 public class RankedQueue {
 
@@ -36,6 +40,7 @@ public class RankedQueue {
 
     /**
      * Update the player rank when he won a battle.
+     *
      * @param player player who won the battle
      */
     public void battleWon(Player player) {
@@ -58,6 +63,7 @@ public class RankedQueue {
 
     /**
      * Update the player rank when he lost a battle.
+     *
      * @param player player who lost the battle
      */
     public void battleLost(Player player) {
@@ -82,6 +88,7 @@ public class RankedQueue {
 
     /**
      * Add a player to the ranked queue.
+     *
      * @param player player to add
      */
     public void addToQueue(Player player) {
@@ -116,6 +123,7 @@ public class RankedQueue {
 
     /**
      * Remove a player from the ranked queue.
+     *
      * @param player player to remove
      */
     public void removeFromQueue(Player player) {
@@ -132,6 +140,7 @@ public class RankedQueue {
 
     /**
      * Display the current rank and its elo to a player.
+     *
      * @param player player to display the rank
      */
     public void checkEloSelf(Player player) {
@@ -144,6 +153,7 @@ public class RankedQueue {
 
     /**
      * Display the current rank and its elo to a player.
+     *
      * @param sender sender to display the rank
      */
     public void checkEloOther(CommandSender sender, Player target) {
@@ -156,9 +166,10 @@ public class RankedQueue {
 
     /**
      * Update the rank of a player when its elo is updated.
-     * @param target target to update the rank
+     *
+     * @param target       target to update the rank
      * @param rankedPlayer ranked player to update
-     * @param regress if the player has lost elo
+     * @param regress      if the player has lost elo
      */
     private void updateRank(Player target, RankedPlayer rankedPlayer, boolean regress) {
         final int elo = rankedPlayer.getElo();
@@ -170,6 +181,7 @@ public class RankedQueue {
 
     /**
      * Add elo to a player.
+     *
      * @param sender sender of the command
      * @param target target to add elo
      * @param amount amount of elo to add
@@ -191,6 +203,7 @@ public class RankedQueue {
 
     /**
      * Remove elo to a player.
+     *
      * @param sender sender of the command
      * @param target target to remove elo
      * @param amount amount of elo to remove
@@ -212,6 +225,7 @@ public class RankedQueue {
 
     /**
      * Set elo to a player.
+     *
      * @param sender sender of the command
      * @param target target to set elo
      * @param amount amount of elo to set
@@ -231,6 +245,7 @@ public class RankedQueue {
 
     /**
      * Load data of a player.
+     *
      * @param sender sender of the command
      * @param target target to load data
      * @return RankedPlayer of the target
@@ -243,8 +258,7 @@ public class RankedQueue {
             if (!self) {
                 sender.sendMessage("§cLe joueur " + target.getName() + " n'a pas encore de classement !");
                 sender.sendMessage("§cIl doit rejoindre la file d'attente pour créer son profil.");
-            }
-            else {
+            } else {
                 target.sendMessage("§cVous n'avez pas encore de classement !");
                 target.sendMessage("§cVous devez rejoindre la file d'attente pour créer votre profil.");
             }
@@ -255,6 +269,7 @@ public class RankedQueue {
 
     /**
      * Check if the player have at least one Pokémon healed.
+     *
      * @param player player to check
      * @return true if the player have at least one Pokémon healed
      */
@@ -269,7 +284,8 @@ public class RankedQueue {
 
     /**
      * Search a battle for a player, by checking the elo of the players in the queue.
-     * @param player player to search a battle
+     *
+     * @param player       player to search a battle
      * @param rankedPlayer RankedPlayer of the player
      */
     private void searchForBattle(Player player, RankedPlayer rankedPlayer) {
@@ -306,9 +322,10 @@ public class RankedQueue {
 
     /**
      * Propose a battle to two players.
-     * @param player player who proposed the battle
-     * @param other player who is proposed the battle
-     * @param rankedPlayer stats from player who proposed the battle
+     *
+     * @param player            player who proposed the battle
+     * @param other             player who is proposed the battle
+     * @param rankedPlayer      stats from player who proposed the battle
      * @param otherRankedPlayer stats from player who is proposed the battle
      */
     private void proposeBattle(Player player, Player other, RankedPlayer rankedPlayer, RankedPlayer otherRankedPlayer) {
@@ -344,6 +361,7 @@ public class RankedQueue {
 
     /**
      * Make a player accept a duel.
+     *
      * @param player player who accept the duel
      */
     public void accept(Player player) {
@@ -360,6 +378,7 @@ public class RankedQueue {
 
     /**
      * Make a player decline a duel.
+     *
      * @param player player who decline the duel
      */
     public void decline(Player player) {
@@ -386,6 +405,7 @@ public class RankedQueue {
 
     /**
      * Launch a duel when both players accepted.
+     *
      * @param duel duel to launch
      */
     private void launchDuel(Duel duel) {
@@ -403,5 +423,9 @@ public class RankedQueue {
 
         final DuelRunnable duelRunnable = new DuelRunnable(duel, ranksManager.getTimeBeforeBattle());
         duelRunnable.runTaskTimer(PixelQilinRanked.INSTANCE, 0L, 20L);
+    }
+
+    public Map<Player, RankedPlayer> getMap() {
+        return players;
     }
 }

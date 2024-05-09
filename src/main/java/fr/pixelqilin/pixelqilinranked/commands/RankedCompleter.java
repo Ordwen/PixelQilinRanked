@@ -13,9 +13,9 @@ public class RankedCompleter implements TabCompleter {
 
         if (args.length <= 1) {
             if (sender.hasPermission("pixelqilinranked.admin"))
-                return List.of("me", "join", "leave", "see", "setzone", "add", "remove", "set", "help");
+                return List.of("me", "join", "leave", "see", "top", "setzone", "add", "remove", "set", "help");
             else
-                return List.of("me", "join", "leave", "help");
+                return List.of("me", "join", "leave", "top", "help");
         }
 
         return null;

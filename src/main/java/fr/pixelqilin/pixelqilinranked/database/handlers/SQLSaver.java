@@ -52,7 +52,7 @@ public class SQLSaver {
                 PluginLogger.info("Player " + playerName + " saved into database.");
             } catch (SQLException e) {
                 PluginLogger.error("An error occurred while saving player's data into database.");
-                e.printStackTrace();
+                PluginLogger.error(e.getMessage());
             }
         });
     }

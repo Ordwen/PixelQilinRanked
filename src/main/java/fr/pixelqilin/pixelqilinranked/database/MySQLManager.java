@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import fr.pixelqilin.pixelqilinranked.PixelQilinRanked;
 import fr.pixelqilin.pixelqilinranked.database.handlers.SQLLoader;
 import fr.pixelqilin.pixelqilinranked.database.handlers.SQLSaver;
+import fr.pixelqilin.pixelqilinranked.database.handlers.SQLTop;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -31,6 +32,7 @@ public class MySQLManager extends SQLManager {
 
         super.sqlLoader = new SQLLoader(this);
         super.sqlSaver = new SQLSaver(this);
+        super.sqlTop = new SQLTop(this);
 
         setupDatabase();
     }

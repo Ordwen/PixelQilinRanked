@@ -2,6 +2,7 @@ package fr.pixelqilin.pixelqilinranked.database.handlers;
 
 import fr.pixelqilin.pixelqilinranked.core.RankedPlayer;
 import fr.pixelqilin.pixelqilinranked.database.SQLManager;
+import fr.pixelqilin.pixelqilinranked.utils.PluginLogger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -55,7 +56,8 @@ public class SQLLoader {
             connection.close();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            PluginLogger.error("An error occurred while loading player's data from database.");
+            PluginLogger.error(e.getMessage());
         }
 
         if (elo.get() == -1) return null;
